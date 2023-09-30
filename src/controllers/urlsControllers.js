@@ -8,16 +8,14 @@ export async function shorteningUrl (request, response) {
     const shortUrl = nanoid()
 
     try {
-        // const isUrlExistent = await db.query(`SELECT url FROM urls WHERE url = $1;`, [url])
-        // if (isUrlExistent.rowCount !== 0) return response.status(400).send( {message: "This URL has already inserted in the database."})
-
-
+        const isUrlExistent = await db.query(`SELECT url FROM urls WHERE url = $1;`, [url])
+        if (isUrlExistent.rowCount !== 0) return response.status(400).send( {message: "This URL has already inserted in the database."})
 
         const insertRequestData = await db.query(`INSERT INTO urls (url, "shortUrl", "userId") VALUES ($1, $2, $3) RETURNING id`, [url, shortUrl, userId])
 
         response.status(201).send( { id: (insertRequestData.rows[0].id), shortUrl } )
 
-    } catch (error) { response.status(502).send(error.message) }
+    } catch (error) { response.status(500).send(error.message) }
 }
 
 export async function getUrlById (request, response) {
