@@ -7,15 +7,14 @@ export async function validateAuthentication (request, response, next) {
     if (!token) return response.status(404).send( { message: "You need to send a token of authentication." } )
 
     try {
-        const session = await db.query(`SELECT token FROM "authenticationSessions" WHERE token = $1;`, [token])
-        console.log(token)
-        console.log(session.rows[0].token)
+        const session = await db.query(`SELECT token, "userId" FROM "authenticationSessions" WHERE token = $1;`, [token])
         if (session.rowCount === 0) return response.status(401).send( { message: "Access not granted." } )
 
-    //     const userInformation = db.query(`SELECT * FROM users WHERE id = ${session.userId}`)
+        const userInformation = await db.query(`SELECT * FROM users WHERE id = $1`, [session.rows[0].userId])
 
-    //     response.locals.token = token
-    //     response.locals.userInformation = userInformation
+        // console.log(userInformation)
+        response.locals.token = token
+        response.locals = userInformation
 
         next()
 

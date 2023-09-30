@@ -17,7 +17,7 @@ export async function signUp (request, response) {
         
         response.sendStatus(201)
 
-    } catch (error) { response.status(500).send(console.log(error)) }
+    } catch (error) { response.status(500).send(error.message) }
 }
 
 export async function signIn (request, response) {
