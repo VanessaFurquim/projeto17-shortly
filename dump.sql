@@ -28,7 +28,7 @@ CREATE TABLE public."authenticationSessions" (
     id integer NOT NULL,
     "userId" integer NOT NULL,
     token text NOT NULL,
-    "createdAt" date DEFAULT now() NOT NULL
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -62,7 +62,7 @@ CREATE TABLE public.urls (
     "shortenedURL" text NOT NULL,
     "visitCount" integer NOT NULL,
     "userId" integer NOT NULL,
-    "createdAt" date DEFAULT now() NOT NULL
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -95,7 +95,7 @@ CREATE TABLE public.users (
     name text NOT NULL,
     email text NOT NULL,
     password text NOT NULL,
-    "createdAt" date DEFAULT now() NOT NULL
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -144,7 +144,6 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: authenticationSessions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public."authenticationSessions" VALUES (1, 3, '49967473-6ffa-483d-ae5d-03fb509c9b41', '2023-09-29');
 
 
 --
@@ -157,16 +156,13 @@ INSERT INTO public."authenticationSessions" VALUES (1, 3, '49967473-6ffa-483d-ae
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.users VALUES (1, 'Maria', 'maria@driven.com.br', '$2b$12$cx/JEe3KBoNeNlIDTE57CeRaueUWzaQ91zY5ZNA7t44IskbUhpHTO', '2023-09-29');
-INSERT INTO public.users VALUES (3, 'João', 'joao@driven.com.br', '$2b$12$HFy3MnF.MC1bgQqcxbsfyOefYewk/IKvqEbK0qB04Ghr.26TLpkie', '2023-09-29');
-INSERT INTO public.users VALUES (4, 'Pedro', 'pedro@driven.com.br', '$2b$12$sNPG5m.jZGBczDTHZplbf.RuHAMCLdTx4IZbEuzcr7iQAECUpXpVO', '2023-09-29');
 
 
 --
 -- Name: authenticationSessions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."authenticationSessions_id_seq"', 1, true);
+SELECT pg_catalog.setval('public."authenticationSessions_id_seq"', 1, false);
 
 
 --
@@ -180,7 +176,7 @@ SELECT pg_catalog.setval('public.urls_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 4, true);
+SELECT pg_catalog.setval('public.users_id_seq', 1, false);
 
 
 --
