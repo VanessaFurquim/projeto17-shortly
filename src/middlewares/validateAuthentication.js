@@ -13,7 +13,7 @@ export async function validateAuthentication (request, response, next) {
         const userInformation = await db.query(`SELECT * FROM users WHERE id = $1`, [session.rows[0].userId])
 
         response.locals.token = token
-        response.locals = userInformation
+        response.locals.user = userInformation
 
         next()
 

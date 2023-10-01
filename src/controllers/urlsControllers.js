@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid/non-secure'
 
 export async function shorteningUrl (request, response) {
     const { url } = request.body
-    const userId = response.locals.rows[0].id
+    const userId = response.locals.user.rows[0].id
 
     const shortUrl = nanoid()
 
@@ -50,7 +50,7 @@ export async function openUrl (request, response) {
 
 export async function deleteUrl (request, response) {
     const shortUrlId = request.params.id
-    const userId = response.locals.rows[0].id
+    const userId = response.locals.user.rows[0].id
 
     try {
         const isShortUrlExistent = await db.query(`SELECT * FROM urls WHERE id = $1`, [shortUrlId])
