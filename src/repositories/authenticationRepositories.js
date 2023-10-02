@@ -1,4 +1,5 @@
 import db from "../database/databaseConfig.js"
+import bcrypt from "bcrypt"
 
 export async function isEmailRegisteredRepository ( { email } ) {
     return db.query(`SELECT * FROM users WHERE email = $1;`, [email])
