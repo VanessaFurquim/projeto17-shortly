@@ -41,7 +41,7 @@ export async function openUrl (request, response) {
         const isShortUrlExistent = await db.query(`SELECT url, "shortUrl" FROM urls WHERE "shortUrl" = $1`, [shortUrl])
         if (isShortUrlExistent.rowCount === 0) return response.status(404).send( {message: "The shortURL you are trying to access does not exist."})
 
-        // add to visitCount
+        await db.query(`UPDATE urls SET "visitCount" = "visitCount" + 1 WHERE "shortUrl" = $1`, [shortUrl])
 
         response.redirect(isShortUrlExistent.rows[0].url)
 

@@ -4,23 +4,40 @@ export async function getUserData (request, response) {
     const userInformation = response.locals.user
 
     try {
-        const usersShortenedUrls = await db.query(`SELECT * FROM urls WHERE "userId" = $1;`, [userInformation.rows[0].id])
-        console.log(usersShortenedUrls)
+        const usersShortenedUrlsData = await db.query(`
+        SELECT
+            "userData".name, "userData"."totalVisitCount",
+            urls.id, urls."shortUrl", urls.url, urls."userId",
+            urls."visitCount" AS "urlVisitCount"
+            FROM urls
+            JOIN
+            (
+                SELECT users.id, users.name,
+                    SUM ("visitCount") AS "totalVisitCount"
+                    FROM users
+                    JOIN urls
+                    ON urls."userId" = users.id
+                    GROUP BY users.id, users.name
+            ) AS "userData"
+            ON urls."userId" = "userData".id
+            WHERE urls."userId" = $1;
+        `, [userInformation.rows[0].id])
 
-        response.status(200).send( "body" )
+        const usersShortenedUrlsObject = {
+            id: usersShortenedUrlsData.rows[0].userId,
+            name: usersShortenedUrlsData.rows[0].name,
+            visitCount: usersShortenedUrlsData.rows[0].totalVisitCount,
+            shortenedUrls: usersShortenedUrlsData.rows.map(url => {
+                return {
+                    id: url.id,
+                    shortUrl: url.shortUrl,
+                    url: url.url,
+                    visitCount: url.urlVisitCount
+                }
+            })
+        }
+
+        response.status(200).send(usersShortenedUrlsObject)
 
     } catch (error) { response.status(500).send(error.message) }
 }
-
-// id.user, name.user FROM users
-// SELECT users.id, users.name, urls.id, urls."shortUrl", urls.url, urls."visitCount" FROM users
-
-// visitCount.user created in this object by summing visitCount's of each shortUrl FROM urls
-// SELECT "userId" SUM "visitCount" FROM urls GROUP BY "userId";
-// 
-
-// shortenedUrls aggregate FROM urls
-//
-
-// id.shortUrl, shortUrl, url, visitCount FROM urls
-// JOIN urls ON users.id = urls.userId;
