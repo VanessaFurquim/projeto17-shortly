@@ -1,5 +1,6 @@
 import db from "../database/databaseConfig.js"
 import { nanoid } from 'nanoid/non-secure'
+import { addNewUrlRepository, addVisitCountToUrlRepository, deleteUrlRepository, isShortUrlExistentByIdRepository, isShortUrlExistentByShortUrlRepository, isUrlExistentRepository } from "../repositories/urlsRepositories.js"
 
 export async function shorteningUrl (request, response) {
     const { url } = request.body
@@ -8,12 +9,12 @@ export async function shorteningUrl (request, response) {
     const shortUrl = nanoid()
 
     try {
-        const isUrlExistent = await db.query(`SELECT url FROM urls WHERE url = $1;`, [url])
+        const isUrlExistent = await isUrlExistentRepository( { url } )
         if (isUrlExistent.rowCount !== 0) return response.status(400).send( {message: "This URL has already inserted in the database."})
 
-        const insertRequestData = await db.query(`INSERT INTO urls (url, "shortUrl", "userId") VALUES ($1, $2, $3) RETURNING id`, [url, shortUrl, userId])
+        const insertUrlRequestData = await addNewUrlRepository( { url, shortUrl, userId } )
 
-        response.status(201).send( { id: (insertRequestData.rows[0].id), shortUrl } )
+        response.status(201).send( { id: (insertUrlRequestData.rows[0].id), shortUrl } )
 
     } catch (error) { response.status(500).send(error.message) }
 }
@@ -22,7 +23,7 @@ export async function getUrlById (request, response) {
     const { id } = request.params
 
     try {
-        const isShortUrlExistent = await db.query(`SELECT url, "shortUrl" FROM urls WHERE id = $1`, [id])
+        const isShortUrlExistent = await isShortUrlExistentByIdRepository(id)
         if (isShortUrlExistent.rowCount === 0) return response.status(404).send( {message: "The shortURL you are trying to access does not exist."})
 
         response.status(200).send( {
@@ -38,10 +39,10 @@ export async function openUrl (request, response) {
     const { shortUrl } = request.params
 
     try {
-        const isShortUrlExistent = await db.query(`SELECT url, "shortUrl" FROM urls WHERE "shortUrl" = $1`, [shortUrl])
+        const isShortUrlExistent = await isShortUrlExistentByShortUrlRepository(shortUrl)
         if (isShortUrlExistent.rowCount === 0) return response.status(404).send( {message: "The shortURL you are trying to access does not exist."})
 
-        await db.query(`UPDATE urls SET "visitCount" = "visitCount" + 1 WHERE "shortUrl" = $1`, [shortUrl])
+        await addVisitCountToUrlRepository(shortUrl)
 
         response.redirect(isShortUrlExistent.rows[0].url)
 
@@ -53,12 +54,15 @@ export async function deleteUrl (request, response) {
     const userId = response.locals.user.rows[0].id
 
     try {
-        const isShortUrlExistent = await db.query(`SELECT * FROM urls WHERE id = $1`, [shortUrlId])
+        const isShortUrlExistent = await isShortUrlExistentByIdRepository (shortUrlId)
         if (isShortUrlExistent.rowCount === 0) return response.status(404).send( {message: "The shortURL you are trying to access does not exist."})
 
-        if (isShortUrlExistent.rows[0].id !== userId) return response.status(401).send( {message: "You are not authorized to perform the solicited action."})
+        console.log(isShortUrlExistent.rows[0].userId)
+        console.log(userId)
+
+        if (isShortUrlExistent.rows[0].userId !== userId) return response.status(401).send( {message: "You are not authorized to perform the solicited action."})
         
-        await db.query(`DELETE FROM urls WHERE id = $1;`, [shortUrlId])
+        await deleteUrlRepository(shortUrlId)
 
         response.sendStatus(204)
 

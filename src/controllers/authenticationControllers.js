@@ -1,6 +1,6 @@
-import db from "../database/databaseConfig.js"
 import bcrypt from "bcrypt"
 import { v4 as uuid } from "uuid"
+import { addNewUserRepository, authenticateSessionRepository, isEmailRegisteredRepository } from "../repositories/authenticationRepositories.js"
 
 export async function signUp (request, response) {
     const { name, email, password, confirmPassword } = request.body
@@ -8,12 +8,10 @@ export async function signUp (request, response) {
     if (password !== confirmPassword) return response.status(422).send( {message: "Password and confirmPassword must match."} )
 
     try {
-        const isEmailRegistered = await db.query(`SELECT email FROM users WHERE email = $1;`, [email])
+        const isEmailRegistered = await isEmailRegisteredRepository( { email } )
         if (isEmailRegistered.rowCount !== 0) return response.status(409).send( { message: "This email is already registered to an account!" } )
 
-        const hash = bcrypt.hashSync(password, 12)
-
-        await db.query(`INSERT INTO users (name, email, password) VALUES ($1, $2, $3)`, [name, email, hash])
+        await addNewUserRepository( { name, email, password } )
         
         response.sendStatus(201)
 
@@ -24,14 +22,17 @@ export async function signIn (request, response) {
     const { email, password } = request.body
 
     try {
-        const isEmailRegistered = await db.query(`SELECT * FROM users WHERE email = $1;`, [email])
+        const isEmailRegistered = await isEmailRegisteredRepository( { email } )
         if (isEmailRegistered.rowCount === 0) return response.status(401).send( { message: "This email address is not registered to any account!" } )
+
+        console.log(isEmailRegistered)
 
         const isPasswordCorrect = bcrypt.compareSync(password, isEmailRegistered.rows[0].password)
         if (!isPasswordCorrect) return response.status(401).send( { message: "Invalid password!" } )
 
+        const id = isEmailRegistered.rows[0].id
         const token = uuid()
-        await db.query(`INSERT INTO "authenticationSessions" (token, "userId") VALUES ($1, $2)`, [token, isEmailRegistered.rows[0].id])
+        await authenticateSessionRepository(token, id)
 
         response.status(200).send( { token: `${token}` } )
     
