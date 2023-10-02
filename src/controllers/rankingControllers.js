@@ -11,10 +11,10 @@ export async function getRanking (request, response) {
 	            JOIN urls
 	                ON urls."userId" = users.id
 	            GROUP BY users.id, users.name
-                ORDER BY SUM ("visitCount") DESC;
+                ORDER BY SUM ("visitCount") DESC
+                LIMIT 10;
             `)
-            console.log(rankingData.rows)
-        
+      
         response.status(200).send(rankingData.rows)
 
     } catch (error) { response.status(500).send(error.message) }
