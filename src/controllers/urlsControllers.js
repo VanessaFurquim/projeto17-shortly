@@ -1,4 +1,3 @@
-import db from "../database/databaseConfig.js"
 import { nanoid } from 'nanoid/non-secure'
 import { addNewUrlRepository, addVisitCountToUrlRepository, deleteUrlRepository, isShortUrlExistentByIdRepository, isShortUrlExistentByShortUrlRepository, isUrlExistentRepository } from "../repositories/urlsRepositories.js"
 
@@ -56,9 +55,6 @@ export async function deleteUrl (request, response) {
     try {
         const isShortUrlExistent = await isShortUrlExistentByIdRepository (shortUrlId)
         if (isShortUrlExistent.rowCount === 0) return response.status(404).send( {message: "The shortURL you are trying to access does not exist."})
-
-        console.log(isShortUrlExistent.rows[0].userId)
-        console.log(userId)
 
         if (isShortUrlExistent.rows[0].userId !== userId) return response.status(401).send( {message: "You are not authorized to perform the solicited action."})
         

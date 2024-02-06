@@ -25,8 +25,6 @@ export async function signIn (request, response) {
         const isEmailRegistered = await isEmailRegisteredRepository( { email } )
         if (isEmailRegistered.rowCount === 0) return response.status(401).send( { message: "This email address is not registered to any account!" } )
 
-        console.log(isEmailRegistered)
-
         const isPasswordCorrect = bcrypt.compareSync(password, isEmailRegistered.rows[0].password)
         if (!isPasswordCorrect) return response.status(401).send( { message: "Invalid password!" } )
 
